@@ -10,9 +10,20 @@ server {
     #access_log  /var/log/nginx/host.access.log  main;
 
     location / {
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header X-Real-IP  $remote_addr;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        # needed for websocket
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        # change scheme of "Origin" to http
+        proxy_set_header Origin http://$host;
+
+        # Pass ETag header from cockpit to clients.
+        # See: https://github.com/cockpit-project/cockpit/issues/5239
+        gzip off;
         proxy_pass http://upstream;
     }
 
