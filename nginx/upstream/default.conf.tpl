@@ -1,3 +1,8 @@
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+
 upstream upstream {
     server ${UPSTREAM_HOST}:${UPSTREAM_PORT};
 }
@@ -10,6 +15,7 @@ server {
     #access_log  /var/log/nginx/host.access.log  main;
 
     location / {
+        proxy_pass http://upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header X-Real-IP  $remote_addr;
@@ -24,7 +30,6 @@ server {
         # Pass ETag header from cockpit to clients.
         # See: https://github.com/cockpit-project/cockpit/issues/5239
         gzip off;
-        proxy_pass http://upstream;
     }
 
     #error_page  404              /404.html;
